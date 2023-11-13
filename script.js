@@ -1,4 +1,4 @@
-const version = "8.4";
+const version = "9.0";
 
 document.addEventListener("DOMContentLoaded", function() {
     console.log("Script version:", version); // Log the version for verification
@@ -39,7 +39,28 @@ document.addEventListener("DOMContentLoaded", function() {
 	let totalHoursCell = totalRow.insertCell();
 	totalHoursCell.id = "weeklyTotal";
 
+    // Load data from the cookie
+    let storedData = getCookie('timeData');
+    if (storedData) {
+        const data = JSON.parse(storedData);
+        // Populate the table with data from the cookie
+        for (const key in data) {
+            const input = document.querySelector(`input[name='${key}']`);
+            if (input) {
+                input.value = data[key];
+                calculateDayTotal(input); // Assuming this function calculates the total for a row
+            }
+        }
+    }
+
     addEventListeners();
+
+    // Assuming there's a button with id 'clearButton' in your HTML
+    document.getElementById('clearButton').addEventListener('click', function() {
+        eraseCookie('timeData');
+        console.log('clearButton clicked!')  
+        // Logic to clear the time table in the UI
+    });
 });
 
 function createInput(name) {
@@ -59,8 +80,17 @@ function addEventListeners() {
         input.addEventListener('change', function() {
             validateAndFormatTime(this);
             calculateDayTotal(this);
+            updateCookieWithCurrentData();
         });
     });
+}
+
+function updateCookieWithCurrentData() {
+    const data = {};
+    document.querySelectorAll('.timeInput').forEach(input => {
+        data[input.name] = input.value;
+    });
+    setCookie('timeData', JSON.stringify(data), 7); // Save for 7 days
 }
 
 function validateAndFormatTime(inputElement) {
@@ -103,7 +133,14 @@ function calculateDayTotal(inputElement) {
         }
     }
     let totalHoursCell = row.cells[row.cells.length - 1];
-    totalHoursCell.textContent = formatHoursMinutes(totalMinutes);
+
+    // Check if totalMinutes is zero and adjust display accordingly
+    if (totalMinutes === 0) {
+        totalHoursCell.textContent = ''; // Or set to any other default display like '--' or 'No Time'
+    } else {
+        totalHoursCell.textContent = formatHoursMinutes(totalMinutes);
+    }
+
     calculateWeeklyTotal();
 }
 
@@ -136,6 +173,38 @@ function calculateWeeklyTotal() {
     }
     let weeklyTotalHoursCell = document.getElementById("weeklyTotal");
     weeklyTotalHoursCell.textContent = formatHoursMinutes(weeklyTotalMinutes);
+}
+
+// Cookie management functions
+function setCookie(name, value, days) {
+    let expires = "";
+    if (days) {
+        let date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    let sameSite = 'SameSite=Lax'; // Use Lax for most cases
+    let secure = (window.location.protocol === 'https:') ? '; Secure' : '';
+    document.cookie = name + "=" + (value || "") + expires + "; path=/; " + sameSite + secure;
+}
+
+
+function getCookie(name) {
+    let nameEQ = name + "=";
+    let ca = document.cookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+}
+
+function eraseCookie(name) {   
+    let sameSite = 'SameSite=Lax';
+    let secure = (window.location.protocol === 'https:') ? '; Secure' : '';
+    document.cookie = name + '=; Max-Age=-99999999; path=/; ' + sameSite + secure;
+    location.reload(); // Reloads the current page
 }
 
 
