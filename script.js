@@ -1,4 +1,4 @@
-const version = "9.0";
+const version = "9.1";
 
 document.addEventListener("DOMContentLoaded", function() {
     console.log("Script version:", version); // Log the version for verification
@@ -48,18 +48,15 @@ document.addEventListener("DOMContentLoaded", function() {
             const input = document.querySelector(`input[name='${key}']`);
             if (input) {
                 input.value = data[key];
-                calculateDayTotal(input); // Assuming this function calculates the total for a row
+                calculateDayTotal(input); 
             }
         }
     }
 
     addEventListeners();
 
-    // Assuming there's a button with id 'clearButton' in your HTML
     document.getElementById('clearButton').addEventListener('click', function() {
         eraseCookie('timeData');
-        console.log('clearButton clicked!')  
-        // Logic to clear the time table in the UI
     });
 });
 
@@ -70,9 +67,6 @@ function createInput(name) {
     input.name = name;
     return input;
 }
-
-// ... rest of the functions (addEventListeners, validateAndFormatTime, isValidTime, calculateDayTotal, calculateDuration, formatHoursMinutes, calculateWeeklyTotal) ...
-
 
 
 function addEventListeners() {
@@ -90,7 +84,7 @@ function updateCookieWithCurrentData() {
     document.querySelectorAll('.timeInput').forEach(input => {
         data[input.name] = input.value;
     });
-    setCookie('timeData', JSON.stringify(data), 7); // Save for 7 days
+    setCookie('timeData', JSON.stringify(data), 30); // Save for 30 days
 }
 
 function validateAndFormatTime(inputElement) {
@@ -185,7 +179,8 @@ function setCookie(name, value, days) {
     }
     let sameSite = 'SameSite=Lax'; // Use Lax for most cases
     let secure = (window.location.protocol === 'https:') ? '; Secure' : '';
-    document.cookie = name + "=" + (value || "") + expires + "; path=/; " + sameSite + secure;
+    document.cookie = name + "=" + value + expires + "; path=/; " + sameSite + secure;
+
 }
 
 
